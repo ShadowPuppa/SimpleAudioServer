@@ -33,13 +33,7 @@ cd path/to/your/music-server
 Install all required packages:
 
 ```bash
-npm install express music-metadata
-```
-
-If you're using anything else (like `fs-extra`, `node-fetch`, etc.), install those too:
-
-```bash
-npm install fs-extra node-fetch
+npm install express music-metadata node-fetch fs-extra
 ```
 
 ---
