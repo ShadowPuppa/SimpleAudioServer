@@ -38,19 +38,7 @@ npm install express music-metadata node-fetch fs-extra
 
 ---
 
-### 3. Run the initial metadata script
-
-This will scan your `music-lib/` folder and generate or update `songs.json`.
-
-```bash
-node initial.js
-```
-
-You can skip this if `initial.js` already runs inside `server.js` at startup.
-
----
-
-### 4. Start the server
+### 3. Start the server
 
 ```bash
 node server.js
@@ -60,6 +48,8 @@ You should see something like:
 
 ```
 Server running at http://localhost:3000
+Music library scanned and songs.json updated.
+Music server running at http://localhost:3000
 ```
 
 ---
