@@ -14,7 +14,6 @@ Make sure you have these installed on your system:
     - `script.js`
     - `styles.css`
     - `music-lib/` (your `.mp3` files)
-    - `cover-art-cache/` (optional, for cached images)
 
 ---
 
