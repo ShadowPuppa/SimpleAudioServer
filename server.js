@@ -2,8 +2,28 @@ const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const app = express();
-
 const cors = require('cors');
+const runScanner = require('./initial');
+const PORT = process.env.PORT || 3000;
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve the songs list
+app.get('/songs', (req, res) => {
+  const songs = require('./songs.json');
+  res.json(songs);
+});
+
+// Run the music scanner on server start
+runScanner().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Music server running at http://localhost:${PORT}`);
+  });
+}).catch((err) => {
+  console.error('Failed to start music scanner:', err);
+});
+
+
 
 // Enable CORS for all routes
 app.use(cors());

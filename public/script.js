@@ -25,32 +25,43 @@ async function fetchSongs() {
 
 function displaySongs(songList) {
   library.innerHTML = '';
-  songList.forEach((song, index) => {
-    const songDiv = document.createElement('div');
-    songDiv.classList.add('song');
-    songDiv.textContent = `${song.title} - ${song.artist}`;
-    songDiv.addEventListener('click', () => {
-      playSong(index);
-    });
-    library.appendChild(songDiv);
+  songList.forEach((song) => {
+  const songDiv = document.createElement('div');
+  songDiv.classList.add('song');
+  songDiv.textContent = `${song.title} - ${song.artist}`;
+  
+  // Find the correct index from the main songs array
+  const actualIndex = songs.findIndex(s => s.file === song.file);
+
+  songDiv.addEventListener('click', () => {
+    playSong(actualIndex);
   });
+
+  library.appendChild(songDiv);
+});
+
 }
 
 function playSong(index) {
   currentSongIndex = index;
   const song = songs[index];
   audioPlayer.src = `/music-lib/${encodeURIComponent(song.file)}`;
-  audioPlayer.play();
-  isPlaying = true;
-  updatePlayPauseIcon();
-  currentSongTitle.textContent = `${song.title} - ${song.artist}`;
+  audioPlayer.play().then(() => {
+    isPlaying = true;
+    updatePlayPauseIcon();
+    currentSongTitle.textContent = `${song.title} - ${song.artist}`;
+  }).catch(err => {
+    console.error('Audio play error:', err);
+  });
 }
 
 function togglePlayPause() {
   if (isPlaying) {
     audioPlayer.pause();
   } else {
-    audioPlayer.play();
+    audioPlayer.play().catch(err => {
+      console.error('Audio resume error:', err);
+    });
   }
   isPlaying = !isPlaying;
   updatePlayPauseIcon();
@@ -58,7 +69,11 @@ function togglePlayPause() {
 
 function playNextSong() {
   if (isShuffling) {
-    currentSongIndex = Math.floor(Math.random() * songs.length);
+    let nextIndex;
+    do {
+      nextIndex = Math.floor(Math.random() * songs.length);
+    } while (nextIndex === currentSongIndex && songs.length > 1);
+    currentSongIndex = nextIndex;
   } else {
     currentSongIndex = (currentSongIndex + 1) % songs.length;
   }
@@ -73,6 +88,7 @@ function playPreviousSong() {
 function toggleShuffle() {
   isShuffling = !isShuffling;
   shuffleBtn.classList.toggle('active', isShuffling);
+  shuffleBtn.style.backgroundColor = isShuffling ? '#007bff' : '#444';
 }
 
 function updatePlayPauseIcon() {

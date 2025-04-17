@@ -1,33 +1,42 @@
+// initial.js
 const fs = require('fs');
 const path = require('path');
-const axios = require('axios');
-const musicMetadata = require('music-metadata');
-const musicDirectory = path.join(__dirname, 'public', 'music-lib'); // Correct path for music-lib inside public
-const songsFilePath = path.join(__dirname, 'songs.json');
+const mm = require('music-metadata');
 
+const musicDir = path.join(__dirname, 'public', 'music-lib');
+const outputFile = path.join(__dirname, 'songs.json');
 
+async function scanMusicDir(dir, baseDir = musicDir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  const results = [];
 
-
-// Function to initialize the songs data
-async function initializeSongs() {
-  // Read the existing songs data from songs.json
-  fs.readFile(songsFilePath, 'utf8', async (err, data) => {
-    if (err) {
-      console.error('Error reading songs.json:', err);
-      return;
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const nested = await scanMusicDir(fullPath, baseDir);
+      results.push(...nested);
+    } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.mp3')) {
+      const relPath = path.relative(baseDir, fullPath).replace(/\\/g, '/');
+      try {
+        const metadata = await mm.parseFile(fullPath);
+        results.push({
+          title: metadata.common.title || path.basename(entry.name, '.mp3'),
+          artist: metadata.common.artist || 'Unknown',
+          file: relPath
+        });
+      } catch (err) {
+        console.warn(`Metadata error for ${relPath}:`, err.message);
+      }
     }
+  }
 
-    let songs = [];
-    try {
-      songs = JSON.parse(data);
-    } catch (e) {
-      console.error('Error parsing songs.json:', e);
-      return;
-    }
-
-    console.log('Initialization complete!');
-  });
+  return results;
 }
 
-// Start the initialization process
-initializeSongs();
+async function run() {
+  const songs = await scanMusicDir(musicDir);
+  fs.writeFileSync(outputFile, JSON.stringify(songs, null, 2));
+  console.log('✅ Music library scanned and songs.json updated.');
+}
+
+module.exports = run;
